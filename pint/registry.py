@@ -37,8 +37,9 @@ if TYPE_CHECKING:
 
     import numpy as np
     import optype as opt
+    import optype.numpy as npt
 
-    from ._typing import Magnitude, UnitLike
+    from ._typing import Magnitude, Scalar, Shape, UnitLike
     from ._typing import Quantity as _Quantity
     from ._typing import Unit as _Unit
 
@@ -63,6 +64,31 @@ class Quantity(
     Generic[MagnitudeT_co],
 ):
     if TYPE_CHECKING:
+        # NOTE: This list of method signatures must be kept in sync with PlainQuantity's overloads
+        #   (you can find the class in pint/facets/plain/quantity.py)
+
+        @overload
+        def __new__(
+            cls,
+            value: datetime.timedelta | np.timedelta64,
+            units: UnitLike | None = None,
+        ) -> "Quantity[float]": ...
+        @overload
+        def __new__(
+            cls, value: str, units: UnitLike | None = None
+        ) -> "Quantity[Any]": ...
+        @overload  # FIXME: This could be more precise
+        def __new__[ScalarT: Scalar](  # type: ignore[misc]
+            cls, value: Sequence[ScalarT], units: UnitLike | None = None
+        ) -> "Quantity[npt.Array1D]": ...
+        @overload  # This overload allows for `Quantity[Any](<T>)` to return `Quantity[T]`.
+        def __new__[T: Magnitude](
+            cls,
+            value: T,
+            units: UnitLike | None = None,
+        ) -> "Quantity[T]": ...
+        @overload
+        def __new__(cls, value: Self, units: UnitLike | None = None) -> Self: ...
 
         @override
         def __iter__[T: Magnitude](
@@ -148,10 +174,22 @@ class Quantity(
             self: Quantity[opt.CanISub[T, U]], other: Quantity[T] | T
         ) -> Quantity[U]: ...
 
+        # Quantity[float] + datetime -> datetime
         @overload
         def __add__(
             self: Quantity[int | float], other: datetime.datetime
         ) -> datetime.timedelta: ...
+        # Quantity[float | array[float]] + timedelta -> Quantity[float | array[float]]
+        @overload
+        def __add__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __add__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads (should work in most cases)
         @overload
         def __add__[T: Magnitude, U: Magnitude](
             self: Quantity[opt.CanAdd[T, U]], other: Quantity[T] | T
@@ -163,6 +201,17 @@ class Quantity(
             | opt.CanRAdd[MagnitudeT_co, U],
         ) -> Quantity[U]: ...
 
+        # Quantity[float | array[float]] - timedelta -> Quantity[float | array[float]]
+        @overload
+        def __sub__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __sub__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads (should work in most cases)
         @overload
         def __sub__[T: Magnitude, U: Magnitude](
             self: Quantity[opt.CanSub[T, U]], other: Quantity[T] | T
@@ -174,6 +223,17 @@ class Quantity(
             | opt.CanRSub[MagnitudeT_co, U],
         ) -> Quantity[U]: ...
 
+        # timedelta - Quantity[float | array[float]] -> Quantity[float | array[float]]
+        @overload
+        def __rsub__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __rsub__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads (should work in most cases)
         @overload
         def __rsub__(
             self: Quantity[int | float],
@@ -194,6 +254,17 @@ class Quantity(
             self: Quantity[opt.CanIMul[T, U]], other: Quantity[T] | T
         ) -> Quantity[U]: ...
 
+        # Quantity[float | array[float]] * timedelta -> Quantity[float | array[float]]
+        @overload
+        def __mul__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __mul__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads (should work in most cases)
         @overload
         def __mul__[T: Magnitude, U: Magnitude](
             self: Quantity[opt.CanMul[T, U]], other: Quantity[T] | T
@@ -225,6 +296,17 @@ class Quantity(
             self: Quantity[opt.CanITruediv[T, U]], other: Quantity[T] | T
         ) -> Quantity[U]: ...
 
+        # Quantity[float | array[float]] / timedelta -> Quantity[float | array[float]]
+        @overload
+        def __truediv__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __truediv__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads
         @overload
         def __truediv__[T: Magnitude, U: Magnitude](
             self: Quantity[opt.CanTruediv[T, U]], other: Quantity[T] | T
@@ -236,6 +318,17 @@ class Quantity(
             | opt.CanRTruediv[MagnitudeT_co, U],
         ) -> Quantity[U]: ...
 
+        # timedelta / Quantity[float | array[float]] -> Quantity[float | array[float]]
+        @overload
+        def __rtruediv__(
+            self: Quantity[float], other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        @overload
+        def __rtruediv__[X: np.floating, S: Shape](
+            self: Quantity[npt.ArrayND[X, S]],
+            other: datetime.timedelta | np.timedelta64,
+        ) -> Quantity[npt.ArrayND[X, S]]: ...
+        # General overloads
         @overload
         def __rtruediv__[T: Magnitude, U: Magnitude](
             self: Quantity[opt.CanRTruediv[T, U]], other: T
@@ -305,7 +398,7 @@ class Quantity(
 
         @overload
         def __pow__[T: Magnitude, U: Magnitude](
-            self: Quantity[opt.CanPow[T, U]], other: Quantity[T] | T
+            self: Quantity[opt.CanPow2[T, U]], other: Quantity[T] | T
         ) -> Quantity[U]: ...
         @overload
         def __pow__[U: Magnitude](
