@@ -16,7 +16,8 @@ need.
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+import pathlib
+from collections.abc import Iterable, Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -508,7 +509,7 @@ class UnitRegistry(
 
     def __init__(
         self,
-        filename="",
+        filename: Iterable[str] | str | pathlib.Path | None = "",
         force_ndarray: bool = False,
         force_ndarray_like: bool = False,
         default_as_delta: bool = True,

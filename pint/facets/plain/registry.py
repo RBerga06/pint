@@ -176,8 +176,9 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
     Parameters
     ----------
     filename : str or None
-        path of the units definition file to load or line iterable object. Empty to load
-        the default definition file. None to leave the UnitRegistry empty.
+        path of the units definition file to load or line-iterable object.
+        Empty string to load the default definition file. (default)
+        None to leave the UnitRegistry empty.
     force_ndarray : bool
         convert any input, scalar or not to a numpy.ndarray.
     force_ndarray_like : bool
@@ -214,7 +215,7 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
 
     def __init__(
         self,
-        filename="",
+        filename: Iterable[str] | str | pathlib.Path | None = "",
         force_ndarray: bool = False,
         force_ndarray_like: bool = False,
         on_redefinition: str = "warn",
