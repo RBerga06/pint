@@ -11,7 +11,6 @@ Compatibility layer.
 from __future__ import annotations
 
 import math
-import sys
 from collections.abc import Callable, Iterable
 from decimal import Decimal
 from fractions import Fraction
@@ -26,10 +25,7 @@ from typing import (
     Unpack,  # noqa
 )
 
-if sys.version_info >= (3, 13):
-    from warnings import deprecated  # noqa
-else:
-    from typing_extensions import deprecated  # noqa
+from typing_extensions import deprecated  # noqa
 
 
 def coerce_scalar(value, scalar):
@@ -106,7 +102,7 @@ def is_upcast_type(cls: type) -> bool:
     else:
         # cache the actual class anyway
         upcast_type_map[fqn] = real_cls
-        return cls is real_cls
+        return cls is real_cls or cls == real_cls
 
 
 def is_duck_array_type(cls: type) -> bool:
@@ -382,20 +378,21 @@ else:
     dask_array = None
 
 
-# TODO: merge with upcast_type_map
-
-#: List upcast type names
-upcast_type_names = (
-    "pint_pandas.pint_array.PintArray",
-    "xarray.core.dataarray.DataArray",
-    "xarray.core.dataset.Dataset",
-    "xarray.core.variable.Variable",
-    "pandas.core.series.Series",
-    "pandas.core.frame.DataFrame",
-    "pandas.Series",
-    "pandas.DataFrame",
-    "xarray.core.dataarray.DataArray",
-)
-
-#: Map type name to the actual type (for upcast types).
-upcast_type_map: dict[str, type | None] = {k: None for k in upcast_type_names}
+#: Map type name to the actual type (for upcast types)
+#
+# NOTE: this dictionary is meant to be public API and it can
+#   be extended by users to include other classes.
+upcast_type_map: dict[str, type | None] = {
+    k: None
+    for k in (
+        "pint_pandas.pint_array.PintArray",
+        "xarray.core.dataarray.DataArray",
+        "xarray.core.dataset.Dataset",
+        "xarray.core.variable.Variable",
+        "pandas.core.series.Series",
+        "pandas.core.frame.DataFrame",
+        "pandas.Series",
+        "pandas.DataFrame",
+        "xarray.core.dataarray.DataArray",
+    )
+}
