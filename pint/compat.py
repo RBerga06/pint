@@ -82,12 +82,18 @@ def fully_qualified_name(t: type) -> str:
     return f"{module}.{name}"
 
 
-def check_upcast_type(obj: type) -> bool:
+# @deprecated("Please use `is_upcast_type` instead.")
+# def check_upcast_type(cls: type) -> bool:
+#     """Check if the type object is an upcast type."""
+#     return _check_upcast_type(cls)
+
+
+def _check_upcast_type(cls: type) -> bool:
     """Check if the type object is an upcast type."""
 
     # TODO: merge or unify name with is_upcast_type
 
-    fqn = fully_qualified_name(obj)
+    fqn = fully_qualified_name(cls)
     if fqn not in upcast_type_map:
         return False
     else:
@@ -98,17 +104,17 @@ def check_upcast_type(obj: type) -> bool:
     # This is to check we are importing the same thing.
     # and avoid weird problems. Maybe instead of return
     # we should raise an error if false.
-    return obj in upcast_type_map.values()
+    return cls in upcast_type_map.values()
 
 
-def is_upcast_type(other: type) -> bool:
+def is_upcast_type(cls: type) -> bool:
     """Check if the type object is an upcast type."""
 
     # TODO: merge or unify name with check_upcast_type
 
-    if other in upcast_type_map.values():
+    if cls in upcast_type_map.values():
         return True
-    return check_upcast_type(other)
+    return _check_upcast_type(cls)
 
 
 def is_duck_array_type(cls: type) -> bool:
