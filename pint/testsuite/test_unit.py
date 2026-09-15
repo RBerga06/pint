@@ -1111,13 +1111,15 @@ class TestConvertWithOffset(QuantityTestCase):
 
     def test_alias(self):
         # Use load_definitions
-        ureg = UnitRegistry([
-            "canonical = [] = can = alias1 = alias2\n",
-            # overlapping aliases
-            "@alias canonical = alias2 = alias3\n",
-            # Against another alias
-            "@alias alias3 = alias4\n",
-        ])
+        ureg = UnitRegistry(
+            [
+                "canonical = [] = can = alias1 = alias2\n",
+                # overlapping aliases
+                "@alias canonical = alias2 = alias3\n",
+                # Against another alias
+                "@alias alias3 = alias4\n",
+            ]
+        )
 
         # Use define
         ureg.define("@alias canonical = alias5")
