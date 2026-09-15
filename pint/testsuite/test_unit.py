@@ -7,6 +7,7 @@ import math
 import operator
 import re
 from contextlib import nullcontext as does_not_raise
+from fractions import Fraction
 
 import pytest
 
@@ -193,16 +194,19 @@ class TestUnit(QuantityTestCase):
         assert x * 0.5 == self.Q_(0.5, "m")
         assert x * self.Q_(1, "m") == self.Q_(1, "m**2")
         assert 1 * x == self.Q_(1, "m")
+        assert x * Fraction(3, 7) == self.Q_(Fraction(3, 7), "m")
 
     def test_unit_div(self):
         x = self.U_("m")
         assert x / 1 == self.Q_(1, "m")
         assert x / 0.5 == self.Q_(2.0, "m")
         assert x / self.Q_(1, "m") == self.Q_(1)
+        assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
 
     def test_unit_rdiv(self):
         x = self.U_("m")
         assert 1 / x == self.Q_(1, "1/m")
+        assert Fraction(3, 7) / x == self.Q_(Fraction(3, 7), "1/m")
 
     @pytest.mark.parametrize(
         ("unit", "power_ratio", "expectation", "expected_unit"),
@@ -1107,15 +1111,13 @@ class TestConvertWithOffset(QuantityTestCase):
 
     def test_alias(self):
         # Use load_definitions
-        ureg = UnitRegistry(
-            [
-                "canonical = [] = can = alias1 = alias2\n",
-                # overlapping aliases
-                "@alias canonical = alias2 = alias3\n",
-                # Against another alias
-                "@alias alias3 = alias4\n",
-            ]
-        )
+        ureg = UnitRegistry([
+            "canonical = [] = can = alias1 = alias2\n",
+            # overlapping aliases
+            "@alias canonical = alias2 = alias3\n",
+            # Against another alias
+            "@alias alias3 = alias4\n",
+        ])
 
         # Use define
         ureg.define("@alias canonical = alias5")
