@@ -158,6 +158,9 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     # PlainUnit * <Magnitude> -> PlainQuantity[<Magnitude>]
     @overload
     def __mul__[T: Magnitude](self, other: T) -> PlainQuantity[T]: ...
+    # PlainUnit * <PlainQuantity> -> <PlainQuantity>
+    @overload
+    def __mul__[Q: PlainQuantity](self, other: Q) -> Q: ...
     # PlainUnit * str -> PlainQuantity
     @overload
     def __mul__(self, other: str) -> PlainQuantity[Any]: ...

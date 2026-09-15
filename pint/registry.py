@@ -433,6 +433,9 @@ class Unit(
         # Unit * <Magnitude> -> Quantity[<Magnitude>]
         @overload
         def __mul__[T: Magnitude](self, other: T) -> Quantity[T]: ...
+        # Unit * <PlainQuantity> -> <PlainQuantity>
+        @overload
+        def __mul__[Q: _PlainQuantity](self, other: Q) -> Q: ...
         # Unit * str -> Quantity
         @overload
         def __mul__(self, other: str) -> Quantity[Any]: ...
