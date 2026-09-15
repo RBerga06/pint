@@ -15,7 +15,7 @@ from numbers import Number
 from typing import TYPE_CHECKING, Any, Self, overload
 
 from ..._typing import Magnitude, UnitLike
-from ...compat import NUMERIC_TYPES, deprecated
+from ...compat import NUMERIC_TYPES, deprecated, is_upcast_type
 from ...errors import DimensionalityError
 from ...util import PrettyIPython, SharedRegistryObject, UnitsContainer
 from .definitions import UnitDefinition
@@ -177,15 +177,19 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     __rmul__ = __mul__
 
     def __truediv__(self, other):
+        # First handle the case where `other` is a unit or quantity
         if self._check(other):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units / other._units)
             else:
                 qself = 1 * self
                 return qself / other
-        # Perform division after initializing a Quantity for compatibility with with
-        # upcast types #2126
-        return self._REGISTRY.Quantity(1, self._units) / other
+        # If `other` is an instance of an upcast type, delegate the `/` operation to it (#2126)
+        if is_upcast_type(type(other)):
+            return self._REGISTRY.Quantity(1, self._units) / other
+        # Otherwise, the most accurate behavior is to first do the division and then wrap into Quantity
+        #   (this is important for e.g. Fraction, cf. #2413)
+        return self._REGISTRY.Quantity(1 / other, self._units)
 
     def __rtruediv__(self, other):
         # As PlainUnit and Quantity both handle truediv with each other rtruediv can
