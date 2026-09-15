@@ -7,6 +7,7 @@ import math
 import operator
 import re
 from contextlib import nullcontext as does_not_raise
+from decimal import Decimal
 from fractions import Fraction
 
 import pytest
@@ -195,6 +196,7 @@ class TestUnit(QuantityTestCase):
         assert x * self.Q_(1, "m") == self.Q_(1, "m**2")
         assert 1 * x == self.Q_(1, "m")
         assert x * Fraction(3, 7) == self.Q_(Fraction(3, 7), "m")
+        assert x * Decimal("0.1") == self.Q_(Decimal("0.1"), "m")
 
     def test_unit_div(self):
         x = self.U_("m")
@@ -202,11 +204,13 @@ class TestUnit(QuantityTestCase):
         assert x / 0.5 == self.Q_(2.0, "m")
         assert x / self.Q_(1, "m") == self.Q_(1)
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
+        assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
 
     def test_unit_rdiv(self):
         x = self.U_("m")
         assert 1 / x == self.Q_(1, "1/m")
         assert Fraction(3, 7) / x == self.Q_(Fraction(3, 7), "1/m")
+        assert Decimal("0.1") / x == self.Q_(Decimal("0.1"), "1/m")
 
     @pytest.mark.parametrize(
         ("unit", "power_ratio", "expectation", "expected_unit"),
