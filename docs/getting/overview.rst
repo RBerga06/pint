@@ -1,5 +1,5 @@
-What is Pint ?
-==============
+What is Pint?
+=============
 
 .. .. image:: _static/logo-full.jpg
 ..    :alt: Pint: **physical quantities**
