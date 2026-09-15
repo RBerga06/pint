@@ -82,39 +82,31 @@ def fully_qualified_name(t: type) -> str:
     return f"{module}.{name}"
 
 
-# @deprecated("Please use `is_upcast_type` instead.")
-# def check_upcast_type(cls: type) -> bool:
-#     """Check if the type object is an upcast type."""
-#     return _check_upcast_type(cls)
-
-
-def _check_upcast_type(cls: type) -> bool:
+def is_upcast_type(cls: type) -> bool:
     """Check if the type object is an upcast type."""
+    # easy case: the class has already been cached
+    if cls in upcast_type_map.values():
+        return True
 
-    # TODO: merge or unify name with is_upcast_type
-
+    # easy case: the class is not intended to be an upcast type
     fqn = fully_qualified_name(cls)
     if fqn not in upcast_type_map:
         return False
+
+    # before caching this class, we want to make sure it's actually
+    #   the exact type it claims to be
+    module_name, class_name = fqn.rsplit(".", 1)
+    try:
+        real_cls = getattr(import_module(module_name), class_name)
+    except ModuleNotFoundError:
+        # this might happen if the user does not have the module installed,
+        #   in which case the class has to be different from what its
+        #   __qualname__ says
+        return False
     else:
-        module_name, class_name = fqn.rsplit(".", 1)
-        cls = getattr(import_module(module_name), class_name)
-
-    upcast_type_map[fqn] = cls
-    # This is to check we are importing the same thing.
-    # and avoid weird problems. Maybe instead of return
-    # we should raise an error if false.
-    return cls in upcast_type_map.values()
-
-
-def is_upcast_type(cls: type) -> bool:
-    """Check if the type object is an upcast type."""
-
-    # TODO: merge or unify name with check_upcast_type
-
-    if cls in upcast_type_map.values():
-        return True
-    return _check_upcast_type(cls)
+        # cache the actual class anyway
+        upcast_type_map[fqn] = real_cls
+        return cls is real_cls
 
 
 def is_duck_array_type(cls: type) -> bool:
