@@ -54,12 +54,13 @@ import platformdirs
 from ... import pint_eval
 from ..._typing import (
     Handler,
+    Magnitude,
     QuantityArgument,
     QuantityOrUnitLike,
     Scalar,
     UnitLike,
 )
-from ...compat import coerce_scalar, deprecated
+from ...compat import _to_magnitude, coerce_scalar, deprecated
 from ...errors import (
     DimensionalityError,
     OffsetUnitCalculusError,
@@ -1182,6 +1183,10 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
 
         return value
 
+    ############
+    # Parsing
+    ############
+
     def parse_unit_name(
         self, unit_name: str, case_sensitive: bool | None = None
     ) -> tuple[tuple[str, str, str], ...]:
@@ -1506,10 +1511,16 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
             return self.Quantity(result)
         return result
 
+    ############
+    # Conversion methods (object -> magnitude or unit):
+    # - intended to be extended by registry subclasses that wish to support more objects
+    # - intended to only be used by the `Unit`/`Quantity` constructors
+    ############
+
     def _into_units(self, units: UnitLike | None, /) -> UnitsContainer:
         """Convenience method that converts the argument into units.
 
-        Intended for use by the `PlainUnit` and `PlainQuantity` constructors.
+        Intended for use by the `Unit` and `Quantity` constructors.
         """
         if units is None:
             return self.UnitsContainer()
@@ -1529,6 +1540,30 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
             raise TypeError(
                 f"units must be of type str, Unit or UnitsContainer; not {type(units)}."
             )
+
+    def _into_magnitude(self, value: object, /, *, units: UnitsContainer) -> Magnitude:
+        """Convenience method that converts the value into a supported magnitude.
+
+        Intended for use by the `Quantity` constructor.
+        """
+        if isinstance(value, PlainQuantity):
+            return value.to(units)._magnitude
+        elif isinstance(value, str):
+            if value == "":
+                raise ValueError("magnitude cannot be an empty string.")
+            parsed = ParserHelper.from_string(value, self.non_int_type)
+            if parsed:
+                return _to_magnitude(
+                    parsed, self.force_ndarray, self.force_ndarray_like
+                )
+            else:
+                return parsed.scale
+        else:
+            return _to_magnitude(value, self.force_ndarray, self.force_ndarray_like)
+
+    ############
+    # Other utilities
+    ############
 
     # We put this last to avoid overriding UnitsContainer
     # and I do not want to rename it.

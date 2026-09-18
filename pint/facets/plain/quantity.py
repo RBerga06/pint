@@ -39,11 +39,9 @@ from ...compat import (
 )
 from ...errors import DimensionalityError, OffsetUnitCalculusError, PintTypeError
 from ...util import (
-    ParserHelper,
     PrettyIPython,
     SharedRegistryObject,
     UnitsContainer,
-    logger,
     to_units_container,
 )
 from . import qto
@@ -206,7 +204,9 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
     @overload
     def __new__(cls, value: Self, units: UnitLike | None = None) -> Self: ...
 
-    def __new__(cls, value, units: UnitLike | None = None) -> PlainQuantity:
+    def __new__(
+        cls: type[PlainQuantity], value: object, units: UnitLike | None = None
+    ) -> PlainQuantity:
         if is_upcast_type(type(value)):
             raise TypeError(f"PlainQuantity cannot wrap upcast type {type(value)}")
 
@@ -216,11 +216,12 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
                     "Expression to parse as PlainQuantity cannot be an empty string."
                 )
             ureg = SharedRegistryObject.__new__(cls)._REGISTRY
-            inst = cast(Self, ureg.parse_expression(value))
+            inst = ureg.parse_expression(value)
             return cls.__new__(cls, inst)
 
         if units is None and isinstance(value, cls):
             return copy.copy(value)
+
         inst = SharedRegistryObject().__new__(cls)
 
         if inst._is_timedelta(value):
@@ -232,23 +233,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
             return inst
 
         units = inst._REGISTRY._into_units(units)
-
-        if isinstance(value, cls):
-            magnitude = value.to(units)._magnitude
-        elif isinstance(value, str):
-            if value == "":
-                raise ValueError("Quantity magnitude cannot be an empty string.")
-            parsed = ParserHelper.from_string(value, inst._REGISTRY.non_int_type)
-            magnitude = (
-                _to_magnitude(value, inst.force_ndarray, inst.force_ndarray_like)
-                if parsed
-                else parsed.scale
-            )
-        else:
-            magnitude = _to_magnitude(
-                value, inst.force_ndarray, inst.force_ndarray_like
-            )
-        inst._magnitude = cast("MagnitudeT_co", magnitude)
+        inst._magnitude = inst._REGISTRY._into_magnitude(value, units=units)
         inst._units = units
 
         return inst
