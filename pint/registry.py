@@ -22,6 +22,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Generic,
+    Literal,
     Self,
     TypeAlias,
     overload,
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     import optype as opt
     import optype.numpy as npt
 
-    from ._typing import Magnitude, Scalar, UnitLike
+    from ._typing import Magnitude, Scalar, UnitLike, UnitsContainer
     from ._typing import Quantity as _Quantity
     from ._typing import Unit as _Unit
     from .facets.plain.quantity import PlainQuantity as _PlainQuantity
@@ -456,8 +457,16 @@ class Unit(
         @overload
         def __truediv__[U: Magnitude](
             self,
-            other: Quantity[opt.CanRTruediv[int, U]] | opt.CanRTruediv[int, U],
+            other: Quantity[opt.CanRTruediv[Literal[1], U]]
+            | opt.CanRTruediv[Literal[1], U],
         ) -> Quantity[U]: ...
+
+        # <Magnitude> / Unit -> Quantity[<Magnitude>]
+        @overload
+        def __rtruediv__[M: Magnitude](self, other: M) -> Quantity[M]: ...
+        # UnitsContainer / Unit -> Unit
+        @overload
+        def __rtruediv__(self, other: UnitsContainer) -> Self: ...
 
 
 class GenericUnitRegistry[QuantityT: _Quantity, UnitT: _Unit](

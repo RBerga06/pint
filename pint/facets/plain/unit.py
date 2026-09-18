@@ -14,7 +14,7 @@ import copy
 import locale
 import operator
 from numbers import Number
-from typing import TYPE_CHECKING, Any, Self, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, overload
 
 from ..._typing import Magnitude, UnitLike
 from ...compat import NUMERIC_TYPES, deprecated, is_upcast_type
@@ -195,7 +195,8 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     @overload
     def __truediv__[U: Magnitude](
         self,
-        other: PlainQuantity[opt.CanRTruediv[int, U]] | opt.CanRTruediv[int, U],
+        other: PlainQuantity[opt.CanRTruediv[Literal[1], U]]
+        | opt.CanRTruediv[Literal[1], U],
     ) -> PlainQuantity[U]: ...
     def __truediv__(self, other):
         # First handle the case where `other` is a unit or quantity
@@ -212,6 +213,12 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
         #   (this is important for e.g. Fraction, cf. #2413)
         return self._REGISTRY.Quantity(1 / other, self._units)
 
+    # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
+    @overload
+    def __rtruediv__[M: Magnitude](self, other: M) -> PlainQuantity[M]: ...
+    # UnitsContainer / PlainUnit -> PlainUnit
+    @overload
+    def __rtruediv__(self, other: UnitsContainer) -> Self: ...
     def __rtruediv__(self, other):
         # As PlainUnit and Quantity both handle truediv with each other rtruediv can
         # only be called for something different.
@@ -225,7 +232,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     __div__ = __truediv__
     __rdiv__ = __rtruediv__
 
-    def __pow__(self, other) -> Self:
+    def __pow__(self, other: Magnitude) -> Self:
         if isinstance(other, NUMERIC_TYPES):
             return self.__class__(self._units**other)
 
