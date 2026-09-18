@@ -975,6 +975,8 @@ class SharedRegistryObject:
     """
 
     _REGISTRY: ClassVar[UnitRegistry]
+
+    # TODO: Should `_units` really be `UnitsContainer | UnitDefinition`?
     _units: UnitsContainer
 
     def __new__(cls, *args, **kwargs):

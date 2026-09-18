@@ -20,7 +20,6 @@ from ..._typing import Magnitude, UnitLike
 from ...compat import NUMERIC_TYPES, deprecated, is_upcast_type
 from ...errors import DimensionalityError
 from ...util import PrettyIPython, SharedRegistryObject, UnitsContainer
-from .definitions import UnitDefinition
 
 if TYPE_CHECKING:
     import datetime
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class PlainUnit(PrettyIPython, SharedRegistryObject):
-    """Implements a class to describe a unit supporting math operations."""
+    """Describes a unit supporting arithmetic operations."""
 
     def __reduce__(self):
         # See notes in Quantity.__reduce__
@@ -43,18 +42,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
     def __init__(self, units: UnitLike) -> None:
         super().__init__()
-        if isinstance(units, (UnitsContainer, UnitDefinition)):
-            self._units = units
-        elif isinstance(units, str):
-            self._units = self._REGISTRY.parse_units(units)._units
-        elif isinstance(units, PlainUnit):
-            self._units = units._units
-        else:
-            raise TypeError(
-                "units must be of type str, Unit or UnitsContainer; not {}.".format(
-                    type(units)
-                )
-            )
+        self._units = self._REGISTRY._into_units(units)
 
     def __copy__(self) -> Self:
         ret = self.__class__(self._units)
@@ -66,7 +54,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
     @deprecated(
         "This function will be removed in future versions of pint.\n"
-        "Use ureg.formatter.format_unit_babel"
+        "Please use `ureg.formatter.format_unit_babel` instead."
     )
     def format_babel(self, spec: str = "", **kwspec: Any) -> str:
         return self._REGISTRY.formatter.format_unit_babel(self, spec, **kwspec)

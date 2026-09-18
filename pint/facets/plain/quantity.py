@@ -112,6 +112,7 @@ def check_implemented(f):
     return wrapped
 
 
+# TODO: remove this utility function since it's not used anywhere
 def method_wraps(numpy_func):
     if isinstance(numpy_func, str):
         numpy_func = getattr(np, numpy_func, None)
@@ -230,26 +231,8 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
                 inst.ito(units)
             return inst
 
-        if units is None:
-            units = inst.UnitsContainer()
-        else:
-            if isinstance(units, (UnitsContainer, UnitDefinition)):
-                units = units
-            elif isinstance(units, str):
-                units = inst._REGISTRY.parse_units(units)._units
-            elif isinstance(units, SharedRegistryObject):
-                if isinstance(units, PlainQuantity) and units.magnitude != 1:
-                    units = copy.copy(units)._units
-                    logger.warning(
-                        "Creating new PlainQuantity using a non unity PlainQuantity as units."
-                    )
-                else:
-                    units = units._units
-            else:
-                raise TypeError(
-                    "units must be of type str, PlainQuantity or "
-                    "UnitsContainer; not {}.".format(type(units))
-                )
+        units = inst._REGISTRY._into_units(units)
+
         if isinstance(value, cls):
             magnitude = value.to(units)._magnitude
         elif isinstance(value, str):

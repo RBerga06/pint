@@ -1506,6 +1506,30 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
             return self.Quantity(result)
         return result
 
+    def _into_units(self, units: UnitLike | None, /) -> UnitsContainer:
+        """Convenience method that converts the argument into units.
+
+        Intended for use by the `PlainUnit` and `PlainQuantity` constructors.
+        """
+        if units is None:
+            return self.UnitsContainer()
+        if isinstance(units, (UnitsContainer, UnitDefinition)):
+            return units
+        elif isinstance(units, str):
+            return self.parse_units(units)._units
+        elif isinstance(units, PlainUnit):
+            return units._units
+        elif isinstance(units, PlainQuantity):
+            if units.magnitude != 1:
+                logger.warning(
+                    "Converting a non-unity PlainQuantity to units: the magnitude has been ignored!"
+                )
+            return units._units
+        else:
+            raise TypeError(
+                f"units must be of type str, Unit or UnitsContainer; not {type(units)}."
+            )
+
     # We put this last to avoid overriding UnitsContainer
     # and I do not want to rename it.
     # TODO: Maybe in the future we need to change it to a more meaningful

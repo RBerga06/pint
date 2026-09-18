@@ -33,6 +33,7 @@ except ModuleNotFoundError:
 
 type Magnitude = Scalar | Array
 
+# TODO: Should `UnitLike` include `UnitDefinition` as well?
 type UnitLike = str | dict[str, Scalar] | UnitsContainer | Unit
 
 type QuantityOrUnitLike = Quantity[Any] | UnitLike
