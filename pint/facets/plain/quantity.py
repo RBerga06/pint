@@ -238,6 +238,10 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
         return inst
 
+    # TODO: Move the two timedelta-related methods inside `GenericPlainRegistry`
+    #   for consistency and correctness (those methods shouldn't have access to existing
+    #   magnitude/units because they're meant to *create* them...)
+
     def _is_timedelta(self, value: object) -> TypeIs[datetime.timedelta]:
         return isinstance(value, datetime.timedelta)
 

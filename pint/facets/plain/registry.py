@@ -1558,6 +1558,11 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
                 raise ValueError("magnitude cannot be an empty string.")
             parsed = ParserHelper.from_string(value, self.non_int_type)
             if parsed:
+                # TODO: Make `_to_magnitude` a `GenericPlainRegistry` method as well
+                #   and subclass it in `GenericNumpyRegistry` for numpy-specific magnitude
+                #   support (e.g., `list` -> `np.ndarray` conversions).
+                #
+                # This will allow to better isolate numpy-specific code in the numpy facet.
                 return _to_magnitude(
                     parsed, self.force_ndarray, self.force_ndarray_like
                 )
@@ -1565,6 +1570,10 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
                 return parsed.scale
         else:
             return _to_magnitude(value, self.force_ndarray, self.force_ndarray_like)
+
+    # TODO: Move `PlainQuantity._is_timedelta` and `PlainQuantity._convert_timedelta` here
+    #   for consistency and correctness (those methods shouldn't have access to existing
+    #   magnitude/units because they're meant to *create* them...)
 
     ############
     # Other utilities
