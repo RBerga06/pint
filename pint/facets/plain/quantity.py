@@ -338,7 +338,8 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @property
     def unitless(self) -> bool:
-        """ """
+        """Whether this quantity does not have any units."""
+        # TODO: does this imply `self.dimensionless`? If so this can be added to the docstring.
         return not bool(self.to_root_units()._units)
 
     def unit_items(self) -> Iterable[tuple[str, Scalar]]:
@@ -347,7 +348,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @property
     def dimensionless(self) -> bool:
-        """ """
+        """Whether this quantity is dimensionless (aka. adimensional)."""
         tmp = self.to_root_units()
 
         return not bool(tmp.dimensionality)
@@ -368,7 +369,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         return self._dimensionality
 
     def check(self, dimension: UnitLike) -> bool:
-        """Return true if the quantity's dimension matches passed dimension."""
+        """Return `True` if the quantity's dimension matches passed dimension."""
         return self.dimensionality == self._REGISTRY.get_dimensionality(dimension)
 
     @classmethod
