@@ -130,8 +130,7 @@ MagnitudeT_co = TypeVar("MagnitudeT_co", bound=Magnitude, covariant=True)
 
 
 class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co]):
-    """Implements a class to describe a physical quantity:
-    the product of a numerical value and a unit of measurement.
+    """Describes a physical quantity: the product of a numerical value and a unit of measurement.
 
     Parameters
     ----------
@@ -210,12 +209,11 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         if is_upcast_type(type(value)):
             raise TypeError(f"PlainQuantity cannot wrap upcast type {type(value)}")
 
-        if units is None and isinstance(value, str) and value == "":
-            raise ValueError(
-                "Expression to parse as PlainQuantity cannot be an empty string."
-            )
-
         if units is None and isinstance(value, str):
+            if value == "":
+                raise ValueError(
+                    "Expression to parse as PlainQuantity cannot be an empty string."
+                )
             ureg = SharedRegistryObject.__new__(cls)._REGISTRY
             inst = cast(Self, ureg.parse_expression(value))
             return cls.__new__(cls, inst)
