@@ -9,6 +9,7 @@ import re
 from contextlib import nullcontext as does_not_raise
 from decimal import Decimal
 from fractions import Fraction
+from typing import assert_type
 
 import pytest
 
@@ -205,6 +206,8 @@ class TestUnit(QuantityTestCase):
         assert x / self.Q_(1, "m") == self.Q_(1)
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
+        assert x / self.U_("s") == self.U_("m / s")
+        assert_type(x / self.U_("s"), UnitRegistry.Unit)
 
     def test_unit_rdiv(self):
         x = self.U_("m")
@@ -222,6 +225,7 @@ class TestUnit(QuantityTestCase):
     def test_unit_pow(self, unit, power_ratio, expectation, expected_unit):
         with expectation:
             x = self.U_(unit)
+            assert_type(x**2, UnitRegistry.Unit)
             assert x**power_ratio == self.U_(expected_unit)
 
     def test_is_compatible_with(self):
