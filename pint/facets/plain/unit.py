@@ -190,6 +190,11 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     def __truediv__(
         self, other: datetime.timedelta | np.timedelta64
     ) -> PlainQuantity[float]: ...
+    # PlainUnit / <ArrayLike> -> PlainQuantity[<NumPy Array>]
+    @overload
+    def __truediv__(
+        self, other: opt.numpy.AnyNumberArray
+    ) -> PlainQuantity[opt.numpy.ArrayND[np.number]]: ...
     # PlainUnit / <Magnitude> or PlainQuantity[<Magnitude>]
     #   -> PlainQuantity[type of 1 / <Magnitude>]
     @overload

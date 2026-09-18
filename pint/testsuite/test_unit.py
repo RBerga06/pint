@@ -201,13 +201,19 @@ class TestUnit(QuantityTestCase):
 
     def test_unit_div(self):
         x = self.U_("m")
+        # x / <magnitude>
         assert x / 1 == self.Q_(1, "m")
         assert x / 0.5 == self.Q_(2.0, "m")
-        assert x / self.Q_(1, "m") == self.Q_(1)
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
+        assert x / [1] == self.Q_(np.array([1]), "m")
+        assert x / "1" == self.Q_(1, "m")
+        # x / <unit>
         assert x / self.U_("s") == self.U_("m / s")
         assert_type(x / self.U_("s"), UnitRegistry.Unit)
+        # x / <quantity>
+        assert x / self.Q_(1, "m") == self.Q_(1)
+        assert x / "1 m/s" == self.Q_(1)
 
     def test_unit_rdiv(self):
         x = self.U_("m")

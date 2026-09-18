@@ -452,6 +452,11 @@ class Unit(
         def __truediv__(
             self, other: datetime.timedelta | np.timedelta64
         ) -> Quantity[float]: ...
+        # Unit / <ArrayLike> -> Quantity[<NumPy Array>]
+        @overload
+        def __truediv__(
+            self, other: opt.numpy.AnyNumberArray
+        ) -> Quantity[opt.numpy.ArrayND[np.number]]: ...
         # Unit / <Magnitude> or Quantity[<Magnitude>]
         #   -> Quantity[type of 1 / <Magnitude>]
         @overload
