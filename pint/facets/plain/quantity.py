@@ -232,7 +232,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
                 inst.ito(units)
             return inst
 
-        units = inst._REGISTRY._into_units(units)
+        units = inst._REGISTRY._into_units(units, target_class_name="PlainQuantity")
         inst._magnitude = inst._REGISTRY._into_magnitude(value, units=units)
         inst._units = units
 
