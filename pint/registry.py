@@ -74,6 +74,13 @@ class Quantity(
         # NOTE: This list of method signatures must be kept in sync with PlainQuantity's overloads
         #   (you can find the class in pint/facets/plain/quantity.py)
 
+        @property
+        @override
+        def u(self) -> Unit: ...
+        @property
+        @override
+        def units(self) -> Unit: ...
+
         @overload
         def __new__(
             cls,

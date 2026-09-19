@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeIs
 
     from ._typing import QuantityOrUnitLike
+    from .facets.plain import GenericPlainRegistry
     from .registry import UnitRegistry
 
 
@@ -1168,9 +1169,9 @@ def sized(y: Any) -> bool:
     return True
 
 
-def create_class_with_registry[TT: type](
-    registry: UnitRegistry, base_class: type[TT]
-) -> type[TT]:
+def create_class_with_registry[T](
+    registry: GenericPlainRegistry, base_class: type[T]
+) -> type[T]:
     """Create new class inheriting from base_class and
     filling _REGISTRY class attribute with an actual instanced registry.
     """
