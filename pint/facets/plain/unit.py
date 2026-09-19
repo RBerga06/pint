@@ -14,7 +14,7 @@ import copy
 import locale
 import operator
 from numbers import Number
-from typing import TYPE_CHECKING, Any, Literal, Self, overload
+from typing import TYPE_CHECKING, Any, Literal, Self, cast, overload
 
 from ..._typing import Magnitude, UnitLike
 from ...compat import NUMERIC_TYPES, deprecated
@@ -160,6 +160,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units * other._units)
             else:
+                other = cast(PlainQuantity, other)
                 qself = self._REGISTRY.Quantity(1, self._units)
                 return qself * other
 
