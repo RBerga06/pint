@@ -204,6 +204,10 @@ class TestUnit(QuantityTestCase):
         # x / <magnitude>
         assert x / 1 == self.Q_(1, "m")
         assert x / 0.5 == self.Q_(2.0, "m")
+        with pytest.raises(TypeError):
+            _ = x / True
+        with pytest.raises(TypeError):
+            _ = x / False
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
         if HAS_NUMPY:
@@ -217,13 +221,28 @@ class TestUnit(QuantityTestCase):
         assert_type(x / self.U_("s"), UnitRegistry.Unit)
         # x / <quantity>
         assert x / self.Q_(1, "m") == self.Q_(1)
-        # assert x / "1 m/s" == self.Q_(1)
+        # assert x / "1 m" == self.Q_(1)
 
     def test_unit_rdiv(self):
         x = self.U_("m")
+        # <magnitude> / x
         assert 1 / x == self.Q_(1, "1/m")
+        assert 0.5 / x == self.Q_(0.5, "1/m")
+        with pytest.raises(TypeError):
+            _ = True / x
+        with pytest.raises(TypeError):
+            _ = False / x
         assert Fraction(3, 7) / x == self.Q_(Fraction(3, 7), "1/m")
         assert Decimal("0.1") / x == self.Q_(Decimal("0.1"), "1/m")
+        if HAS_NUMPY:
+            assert [1] / x == self.Q_(np.array([1]), "1/m")
+        else:
+            with pytest.raises(TypeError):
+                _ = [1] / x
+        assert "1" / x == self.Q_(1, "1/m")
+        # <quantity> / x
+        assert self.Q_(1, "m") / x == self.Q_(1)
+        # assert "1 m" / x == self.Q_(1)
 
     @pytest.mark.parametrize(
         ("unit", "power_ratio", "expectation", "expected_unit"),
