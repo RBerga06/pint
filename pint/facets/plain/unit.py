@@ -199,29 +199,27 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
         if self._check(other):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units / other._units)
-            else:
-                qself = 1 * self
-                return qself / other
+            other = cast("PlainQuantity", other)
         return self._REGISTRY.Quantity(1, self._units) / other
 
     # UnitsContainer / PlainUnit -> PlainUnit
     @overload
     def __rtruediv__(self, other: UnitsContainer) -> Self: ...
+    # timedelta / PlainUnit -> PlainQuantity[float]
+    @overload
+    def __rtruediv__(
+        self, other: datetime.timedelta | np.timedelta64
+    ) -> PlainQuantity[float]: ...
     # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
     @overload
     def __rtruediv__[M: Magnitude](self, other: M) -> PlainQuantity[M]: ...
-    def __rtruediv__(self, other):
+    def __rtruediv__(self: PlainUnit, other) -> PlainUnit | PlainQuantity:
         # NOTE: As PlainUnit and Quantity both handle __truediv__ with each other,
         #   __rtruediv__ can only be called for something different.
         if isinstance(other, UnitsContainer):
             return self.__class__(other / self._units)
-        # other is meant to be a magnitude
-        try:
-            return self._REGISTRY.Quantity(other, 1 / self._units)
-        except PintTypeError:
-            raise
-        except TypeError:
-            return NotImplemented
+        # other is meant to be a quantity or magnitude
+        return self._REGISTRY.Quantity(other) / self
 
     __div__ = __truediv__
     __rdiv__ = __rtruediv__
