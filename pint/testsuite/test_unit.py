@@ -236,6 +236,8 @@ class TestUnit(QuantityTestCase):
         # x / <unit>
         assert x / self.U_("s") == self.U_("m / s")
         assert_type(x / self.U_("s"), UnitRegistry.Unit)
+        assert x / self.Q_(1, "s").units == self.U_("m / s")
+        assert self.Q_(1, "s").units / x == self.U_("s / m")
         # x / <quantity>
         assert x / datetime.timedelta(0, 1, 0) == self.Q_(1.0, "m/s")
         assert x / self.Q_(1, "m") == self.Q_(1)
