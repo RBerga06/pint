@@ -135,8 +135,10 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
     ----------
     value : str, PlainQuantity, datetime.timedelta or any numeric type
         Value of the physical quantity to be created.
-    units : UnitsContainer, str, PlainQuantity (in which case the magnitude will be dropped) or None (the default)
+    units : UnitsContainer, str, PlainQuantity or None, default: None
         Units of the physical quantity to be created.
+        If this is a :class:`PlainQuantity`, its :attr:`.magnitude` will be ignored:
+        in case it does not equal ``1``, pint will additionally issue a warning.
 
     Returns
     -------
