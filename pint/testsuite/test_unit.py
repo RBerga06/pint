@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import datetime
 import functools
 import logging
 import math
@@ -210,6 +211,7 @@ class TestUnit(QuantityTestCase):
             _ = x / False
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
+        assert x / datetime.timedelta(0, 1, 0) == self.Q_(1.0, "m/s")
         if HAS_NUMPY:
             assert x / [1] == self.Q_(np.array([1]), "m")
         else:
@@ -234,6 +236,7 @@ class TestUnit(QuantityTestCase):
             _ = False / x
         assert Fraction(3, 7) / x == self.Q_(Fraction(3, 7), "1/m")
         assert Decimal("0.1") / x == self.Q_(Decimal("0.1"), "1/m")
+        assert datetime.timedelta(0, 1, 0) / x == self.Q_(1.0, "s/m")
         if HAS_NUMPY:
             assert [1] / x == self.Q_(np.array([1]), "1/m")
         else:
