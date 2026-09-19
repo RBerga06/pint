@@ -1236,14 +1236,6 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         def __rmatmul__(self, other):
             return self.__matmul__(other)
 
-    def _truedivide_cast_int(self, a, b):
-        t = self._REGISTRY.non_int_type
-        if isinstance(a, int):
-            a = t(a)
-        if isinstance(b, int):
-            b = t(b)
-        return operator.truediv(a, b)
-
     def __itruediv__[T: Magnitude, U: Magnitude](
         self: PlainQuantity[opt.CanITruediv[T, U]], other: PlainQuantity[T] | T
     ) -> PlainQuantity[U]:
@@ -1269,9 +1261,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         | opt.CanRTruediv[MagnitudeT_co, U],
     ) -> PlainQuantity[U]: ...
     def __truediv__(self: PlainQuantity, other) -> PlainQuantity:
-        if isinstance(self.m, int) or isinstance(getattr(other, "m", None), int):
-            return self._mul_div(other, self._truedivide_cast_int, operator.truediv)
-        return self._mul_div(other, operator.truediv)
+        return self._mul_div(other, self._REGISTRY._truediv)
 
     # timedelta / PlainQuantity[float | array[float]] -> PlainQuantity[float | array[float]]
     @overload

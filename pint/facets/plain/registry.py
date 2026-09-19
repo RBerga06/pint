@@ -27,6 +27,7 @@ import copy
 import functools
 import inspect
 import itertools
+import operator
 import pathlib
 import re
 from collections import defaultdict
@@ -459,9 +460,26 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
             return self._diskcache.cache_folder
         return None
 
+    ############
+    # Custom non-integer-type support
+    # - used when parsing decimals: "3.14" -> non_int_type("3.14")
+    # - used when dividing integers: 3/2 -> non_int_type(3)/non_int_type(2)
+    ############
+
     @property
     def non_int_type(self):
         return self._non_int_type
+
+    def _truediv(self, a, b):
+        """Like `operator.truediv`, but `int/int -> non_int_type` instead of `float`"""
+        if isinstance(a, int) and isinstance(b, int):
+            a = self._non_int_type(a)
+            b = self._non_int_type(b)
+        return operator.truediv(a, b)
+
+    ############
+    # Extending the registry with new unit definitions
+    ############
 
     def define(self, definition: str | type) -> None:
         """Add unit to the registry.
