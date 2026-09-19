@@ -160,7 +160,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units * other._units)
             else:
-                other = cast(PlainQuantity, other)
+                other = cast("PlainQuantity", other)
                 qself = self._REGISTRY.Quantity(1, self._units)
                 return qself * other
 
