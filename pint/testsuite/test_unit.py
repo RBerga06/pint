@@ -193,12 +193,28 @@ class TestUnit(QuantityTestCase):
 
     def test_unit_mul(self):
         x = self.U_("m")
+        # x * <magnitude>
         assert x * 1 == self.Q_(1, "m")
         assert x * 0.5 == self.Q_(0.5, "m")
-        assert x * self.Q_(1, "m") == self.Q_(1, "m**2")
-        assert 1 * x == self.Q_(1, "m")
+        with pytest.raises(TypeError):
+            _ = x * True
+        with pytest.raises(TypeError):
+            _ = x * False
         assert x * Fraction(3, 7) == self.Q_(Fraction(3, 7), "m")
         assert x * Decimal("0.1") == self.Q_(Decimal("0.1"), "m")
+        if HAS_NUMPY:
+            assert x * [1] == self.Q_(np.array([1]), "m")
+        else:
+            with pytest.raises(TypeError):
+                _ = x * [1]
+        assert x * "1" == self.Q_(1, "m")
+        # x * <unit>
+        assert x * self.U_("s") == self.U_("m s")
+        assert_type(x * self.U_("s"), UnitRegistry.Unit)
+        # x * <quantity>
+        assert x * datetime.timedelta(0, 1, 0) == self.Q_(1.0, "m s")
+        assert x * self.Q_(1, "s") == self.Q_(1, "m s")
+        # assert x * "1 m" == self.Q_(1)
 
     def test_unit_div(self):
         x = self.U_("m")
@@ -211,7 +227,6 @@ class TestUnit(QuantityTestCase):
             _ = x / False
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
-        assert x / datetime.timedelta(0, 1, 0) == self.Q_(1.0, "m/s")
         if HAS_NUMPY:
             assert x / [1] == self.Q_(np.array([1]), "m")
         else:
@@ -222,6 +237,7 @@ class TestUnit(QuantityTestCase):
         assert x / self.U_("s") == self.U_("m / s")
         assert_type(x / self.U_("s"), UnitRegistry.Unit)
         # x / <quantity>
+        assert x / datetime.timedelta(0, 1, 0) == self.Q_(1.0, "m/s")
         assert x / self.Q_(1, "m") == self.Q_(1)
         # assert x / "1 m" == self.Q_(1)
 
@@ -236,7 +252,6 @@ class TestUnit(QuantityTestCase):
             _ = False / x
         assert Fraction(3, 7) / x == self.Q_(Fraction(3, 7), "1/m")
         assert Decimal("0.1") / x == self.Q_(Decimal("0.1"), "1/m")
-        assert datetime.timedelta(0, 1, 0) / x == self.Q_(1.0, "s/m")
         if HAS_NUMPY:
             assert [1] / x == self.Q_(np.array([1]), "1/m")
         else:
@@ -244,6 +259,7 @@ class TestUnit(QuantityTestCase):
                 _ = [1] / x
         assert "1" / x == self.Q_(1, "1/m")
         # <quantity> / x
+        assert datetime.timedelta(0, 1, 0) / x == self.Q_(1.0, "s/m")
         assert self.Q_(1, "m") / x == self.Q_(1)
         # assert "1 m" / x == self.Q_(1)
 
