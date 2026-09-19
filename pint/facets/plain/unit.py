@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, cast, overload
 
 from ..._typing import Magnitude, UnitLike
 from ...compat import NUMERIC_TYPES, deprecated
-from ...errors import DimensionalityError, PintTypeError
+from ...errors import DimensionalityError
 from ...util import PrettyIPython, SharedRegistryObject, UnitsContainer
 
 if TYPE_CHECKING:
@@ -138,9 +138,9 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
         return self.dimensionless
 
-    # PlainUnit * PlainUnit -> PlainUnit
+    # PlainUnit * (PlainUnit | UnitsContainer) -> PlainUnit
     @overload
-    def __mul__(self, other: Self) -> Self: ...
+    def __mul__(self, other: Self | UnitsContainer) -> Self: ...
     # PlainUnit * timedelta -> PlainQuantity[float]
     @overload
     def __mul__(
@@ -156,13 +156,15 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     @overload
     def __mul__(self, other: str) -> PlainQuantity[Any]: ...
     def __mul__(self, other):
+        if isinstance(other, UnitsContainer):
+            return self.__class__(self._units * other)
+
         if self._check(other):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units * other._units)
             else:
                 other = cast("PlainQuantity", other)
-                qself = self._REGISTRY.Quantity(1, self._units)
-                return qself * other
+                return self._REGISTRY.Quantity(1, self._units) * other
 
         if isinstance(other, Number) and other == 1:
             return self._REGISTRY.Quantity(other, self._units)
@@ -227,10 +229,8 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     def __pow__(self, other: Magnitude) -> Self:
         if isinstance(other, NUMERIC_TYPES):
             return self.__class__(self._units**other)
-
         else:
-            mess = f"Cannot power PlainUnit by {type(other)}"
-            raise TypeError(mess)
+            raise TypeError(f"Cannot power PlainUnit by {type(other)}")
 
     def __hash__(self) -> int:
         return self._units.__hash__()
