@@ -675,28 +675,26 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
             other = self.__class__(other)
 
         if not self._check(other):
-            # other not a PlainQuantity
+            # NOTE: other is not a PlainQuantity (because if the registry does not match, _check() raises)
+            # Ensure the magnitude matches the dimensionless value before proceeding (#54)
+            if self.dimensionless:
+                self.ito(self.UnitsContainer())
+            # Normalize the rhs
             try:
-                other_magnitude = _to_magnitude(
-                    other, self.force_ndarray, self.force_ndarray_like
-                )
+                other_magnitude = self._REGISTRY._into_magnitude(other, self._units)
             except PintTypeError:
                 raise
             except TypeError:
                 return NotImplemented
-            if zero_or_nan(other, True):
-                # If the other value is 0 (but not PlainQuantity 0)
-                # do the operation without checking units.
-                # We do the calculation instead of just returning the same
-                # value to enforce any shape checking and type casting due to
-                # the operation.
+            # Do the operation
+            if zero_or_nan(other, True) or self.dimensionless:
+                # If the other value is 0 (but not PlainQuantity 0) do the operation without checking units.
+                # We do the calculation anyway instead of just returning the same value
+                #   to enforce any shape checking and type casting due to the operation.
                 self._magnitude = op(self._magnitude, other_magnitude)
-            elif self.dimensionless:
-                self.ito(self.UnitsContainer())
-                self._magnitude = op(self._magnitude, other_magnitude)
+                return self
             else:
                 raise DimensionalityError(self._units, "dimensionless")
-            return self
 
         if not self.dimensionality == other.dimensionality:
             raise DimensionalityError(
@@ -790,27 +788,29 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
             other = self.__class__(other)
 
         if not self._check(other):
-            # other not from same Registry or not a PlainQuantity
-            if zero_or_nan(other, True):
-                # If the other value is 0 or NaN (but not a PlainQuantity)
-                # do the operation without checking units.
-                # We do the calculation instead of just returning the same
-                # value to enforce any shape checking and type casting due to
-                # the operation.
-                units = self._units
-                magnitude = op(
-                    self._magnitude,
-                    _to_magnitude(other, self.force_ndarray, self.force_ndarray_like),
-                )
-            elif self.dimensionless:
-                units = self.UnitsContainer()
-                magnitude = op(
-                    self.to(units)._magnitude,
-                    _to_magnitude(other, self.force_ndarray, self.force_ndarray_like),
-                )
+            # NOTE: other is not a PlainQuantity (because if the registry does not match, _check() raises)
+            # Ensure the magnitude matches the dimensionless value before proceeding (#54)
+            if self.dimensionless:
+                self = self.to(self.UnitsContainer())
+            # Normalize the rhs
+            try:
+                other_magnitude = self._REGISTRY._into_magnitude(other, self._units)
+            except PintTypeError:
+                raise
+            except TypeError:
+                return NotImplemented
+            # Do the operation
+            if zero_or_nan(other, True) or self.dimensionless:
+                # If the other value is 0 or NaN (but not a PlainQuantity) do the operation without checking units.
+                # We do the calculation anyway instead of just returning the same value
+                #   to enforce any shape checking and type casting due to the operation.
+                magnitude = op(self._magnitude, other_magnitude)
             else:
                 raise DimensionalityError(self._units, "dimensionless")
-            return self.__class__(magnitude, units)
+            return self.__class__(magnitude, self._units)
+
+        # Since it has a registry, other must be a PlainQuantity (with the correct registry)
+        other = cast(PlainQuantity, other)
 
         # Special case for logarithmic units: dB can be added to dBm, dBW, etc.
         # Get non-multiplicative units before checking dimensionality

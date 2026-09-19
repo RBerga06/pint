@@ -1546,12 +1546,15 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
                 f"units must be of type str, Unit or UnitsContainer; not {type(units)}."
             )
 
-    def _into_magnitude(self, value: object, /, *, units: UnitsContainer) -> Magnitude:
+    def _into_magnitude(
+        self, value: object, /, units: UnitsContainer | None = None
+    ) -> Magnitude:
         """Convenience method that converts the value into a supported magnitude.
 
-        Intended for use by the `Quantity` constructor.
+        Intended for use by `Quantity`'s methods.
+        The `units` argument is the target unit, required when `value` is a `PlainQuantity`.
         """
-        if isinstance(value, PlainQuantity):
+        if isinstance(value, PlainQuantity) and (units is not None):
             return value.to(units)._magnitude
         elif isinstance(value, str):
             if value == "":
@@ -1561,7 +1564,6 @@ class GenericPlainRegistry[QuantityT: PlainQuantity, UnitT: PlainUnit](
                 # TODO: Make `_to_magnitude` a `GenericPlainRegistry` method as well
                 #   and subclass it in `GenericNumpyRegistry` for numpy-specific magnitude
                 #   support (e.g., `list` -> `np.ndarray` conversions).
-                #
                 # This will allow to better isolate numpy-specific code in the numpy facet.
                 return _to_magnitude(
                     parsed, self.force_ndarray, self.force_ndarray_like
