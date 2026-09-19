@@ -64,8 +64,8 @@ LaTeX and pretty formatting. Unit name translation is available if Babel_ is
 installed.
 
 **Free to choose the numerical type**: You can use any numerical type
-(:py:type:`float`, :py:type:`fractions.Fraction`, :py:type:`decimal.Decimal`,
-:py:type:`numpy.ndarray`, etc). NumPy_ is supported, but not required.
+(:py:class:`float`, :py:class:`fractions.Fraction`, :py:class:`decimal.Decimal`,
+:py:class:`numpy.ndarray`, etc). NumPy_ is supported, but not required.
 
 **Awesome NumPy integration**: When you choose to use a NumPy_ ndarray, its methods and
 ufuncs are supported including automatic conversion of units. For example
