@@ -369,7 +369,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         return self._dimensionality
 
     def check(self, dimension: UnitLike) -> bool:
-        """Return `True` if the quantity's dimension matches passed dimension."""
+        """Return :py:const:`True` if the quantity's dimension matches passed dimension."""
         return self.dimensionality == self._REGISTRY.get_dimensionality(dimension)
 
     @classmethod
