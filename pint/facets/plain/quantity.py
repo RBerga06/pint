@@ -328,12 +328,12 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @property
     def units(self) -> Unit:
-        """PlainQuantity's units. Long form for  :py:attr:`.u`"""
+        """PlainQuantity's units. Long form for :py:attr:`.u`"""
         return self._REGISTRY.Unit(self._units)
 
     @property
     def u(self) -> Unit:
-        """PlainQuantity's units. Short form for  :py:attr:`.units`"""
+        """PlainQuantity's units. Short form for :py:attr:`.units`"""
         return self._REGISTRY.Unit(self._units)
 
     @property
