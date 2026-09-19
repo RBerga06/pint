@@ -14,7 +14,7 @@ from typing import assert_type
 import pytest
 
 from pint import DimensionalityError, RedefinitionError, UndefinedUnitError, errors
-from pint.compat import np
+from pint.compat import HAS_NUMPY, np
 from pint.registry import LazyRegistry, UnitRegistry
 from pint.testsuite import QuantityTestCase, assert_no_warnings, helpers
 from pint.util import ParserHelper, UnitsContainer
@@ -206,7 +206,11 @@ class TestUnit(QuantityTestCase):
         assert x / 0.5 == self.Q_(2.0, "m")
         assert x / Fraction(3, 7) == self.Q_(Fraction(7, 3), "m")
         assert x / Decimal("0.1") == self.Q_(Decimal("10"), "m")
-        assert x / [1] == self.Q_(np.array([1]), "m")
+        if HAS_NUMPY:
+            assert x / [1] == self.Q_(np.array([1]), "m")
+        else:
+            with pytest.raises(TypeError):
+                _ = x / [1]
         assert x / "1" == self.Q_(1, "m")
         # x / <unit>
         assert x / self.U_("s") == self.U_("m / s")
