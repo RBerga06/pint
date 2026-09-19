@@ -455,7 +455,7 @@ class Unit(
 
         # Unit / (Unit or UnitsContainer) -> Unit
         @overload
-        def __truediv__(self, other: Self) -> Self: ...
+        def __truediv__(self, other: Self | UnitsContainer) -> Self: ...
         # Unit / timedelta -> Quantity[float]
         @overload
         def __truediv__(

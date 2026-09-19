@@ -177,7 +177,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
     # PlainUnit / (PlainUnit or UnitsContainer) -> PlainUnit
     @overload
-    def __truediv__(self, other: Self) -> Self: ...
+    def __truediv__(self, other: Self | UnitsContainer) -> Self: ...
     # PlainUnit / timedelta -> PlainQuantity[float]
     @overload
     def __truediv__(
