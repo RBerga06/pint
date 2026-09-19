@@ -304,12 +304,12 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @property
     def magnitude(self) -> MagnitudeT_co:
-        """PlainQuantity's magnitude. Long form for `m`"""
+        """PlainQuantity's magnitude. Long form for :py:attr:`.m`"""
         return self._magnitude
 
     @property
     def m(self) -> MagnitudeT_co:
-        """PlainQuantity's magnitude. Short form for `magnitude`"""
+        """PlainQuantity's magnitude. Short form for :py:attr:`.magnitude`"""
         return self._magnitude
 
     def m_as(self, units: QuantityOrUnitLike | None) -> MagnitudeT_co:
@@ -328,18 +328,18 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @property
     def units(self) -> Unit:
-        """PlainQuantity's units. Long form for `u`"""
+        """PlainQuantity's units. Long form for  :py:attr:`.u`"""
         return self._REGISTRY.Unit(self._units)
 
     @property
     def u(self) -> Unit:
-        """PlainQuantity's units. Short form for `units`"""
+        """PlainQuantity's units. Short form for  :py:attr:`.units`"""
         return self._REGISTRY.Unit(self._units)
 
     @property
     def unitless(self) -> bool:
         """Whether this quantity does not have any units."""
-        # TODO: does this imply `self.dimensionless`? If so this can be added to the docstring.
+        # TODO: does this imply :py:attr:`self.dimensionless`? If so this can be added to the docstring.
         return not bool(self.to_root_units()._units)
 
     def unit_items(self) -> Iterable[tuple[str, Scalar]]:
