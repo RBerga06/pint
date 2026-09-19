@@ -199,12 +199,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
             else:
                 qself = 1 * self
                 return qself / other
-        # If `other` is an instance of an upcast type, delegate the `/` operation to it (#2126)
-        if is_upcast_type(type(other)):
-            return self._REGISTRY.Quantity(1, self._units) / other
-        # Otherwise, the most accurate behavior is to first do the division and then wrap into Quantity
-        #   (this is important for e.g. Fraction, cf. #2413)
-        return self._REGISTRY.Quantity(1 / other, self._units)
+        return self._REGISTRY.Quantity(1, self._units) / other
 
     # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
     @overload

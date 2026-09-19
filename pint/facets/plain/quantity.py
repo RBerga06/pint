@@ -1083,7 +1083,6 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
         if isinstance(other, self._REGISTRY.Unit):
             other = 1 * other
-
         # from now on, we know `other` is a `PlainQuantity`
         other = cast(PlainQuantity, other)
 
@@ -1147,9 +1146,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
                         self._units, getattr(other, "units", "")
                     )
             try:
-                other_magnitude = _to_magnitude(
-                    other, self.force_ndarray, self.force_ndarray_like
-                )
+                other_magnitude = self._REGISTRY._into_magnitude(other)
             except PintTypeError:
                 raise
             except TypeError:
@@ -1162,6 +1159,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
         if isinstance(other, self._REGISTRY.Unit):
             other = 1 * other
+        other = cast(PlainQuantity, other)
 
         new_self = self
 
