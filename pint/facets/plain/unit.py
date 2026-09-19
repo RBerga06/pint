@@ -17,7 +17,7 @@ from numbers import Number
 from typing import TYPE_CHECKING, Any, Literal, Self, overload
 
 from ..._typing import Magnitude, UnitLike
-from ...compat import NUMERIC_TYPES, deprecated, is_upcast_type
+from ...compat import NUMERIC_TYPES, deprecated
 from ...errors import DimensionalityError
 from ...util import PrettyIPython, SharedRegistryObject, UnitsContainer
 
