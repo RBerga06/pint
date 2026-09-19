@@ -990,8 +990,7 @@ class SharedRegistryObject:
         return inst
 
     def _check(self, other: object) -> "TypeIs[SharedRegistryObject]":
-        """Check if the other object uses a registry and if so that it is the
-        same registry.
+        """Check if the other object uses a registry and if so that it is the same registry.
 
         Parameters
         ----------
