@@ -1285,9 +1285,7 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
             return self.__class__(other) / self
 
         try:
-            other_magnitude = _to_magnitude(
-                other, self.force_ndarray, self.force_ndarray_like
-            )
+            other_magnitude = self._REGISTRY._into_magnitude(other, units=self._units)
         except PintTypeError:
             raise
         except TypeError:
