@@ -424,23 +424,25 @@ class Unit(
     facets.PlainRegistry.Unit,
 ):
     if TYPE_CHECKING:
-        # Unit * Unit -> Unit
+        # Unit * (Unit | UnitsContainer) -> Unit
         @overload
-        def __mul__(self, other: Self) -> Self: ...
+        def __mul__(self, other: Self | UnitsContainer) -> Self: ...
         # Unit * timedelta -> Quantity[float]
         @overload
         def __mul__(
             self, other: datetime.timedelta | np.timedelta64
         ) -> Quantity[float]: ...
+        # Unit * <ArrayLike> -> Quantity[<Array>]
+        @overload
+        def __mul__[T: np.number](
+            self, other: opt.numpy.AnyArray[T]
+        ) -> opt.numpy.ArrayND[T]: ...
         # Unit * <Magnitude> -> Quantity[<Magnitude>]
         @overload
         def __mul__[T: Magnitude](self, other: T) -> Quantity[T]: ...
-        # Unit * <PlainQuantity> -> <PlainQuantity>
+        # Unit * <Quantity> -> <Quantity>
         @overload
-        def __mul__[Q: _PlainQuantity](self, other: Q) -> Q: ...
-        # Unit * str -> Quantity
-        @overload
-        def __mul__(self, other: str) -> Quantity[Any]: ...
+        def __mul__[Q: Quantity](self, other: Q) -> Q: ...
 
         __rmul__ = __mul__
 
