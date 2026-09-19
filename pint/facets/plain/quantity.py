@@ -133,9 +133,9 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     Parameters
     ----------
-    value : str, pint.PlainQuantity or any numeric type
+    value : str, PlainQuantity, datetime.timedelta or any numeric type
         Value of the physical quantity to be created.
-    units : UnitsContainer, str or pint.PlainQuantity
+    units : UnitsContainer, str, PlainQuantity (in which case the magnitude will be dropped) or None (the default)
         Units of the physical quantity to be created.
 
     Returns
