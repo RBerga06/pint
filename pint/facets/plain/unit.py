@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any, Literal, Self, cast, overload
 
 from ..._typing import Magnitude, UnitLike
 from ...compat import NUMERIC_TYPES, deprecated
-from ...errors import DimensionalityError
+from ...errors import DimensionalityError, PintTypeError
 from ...util import PrettyIPython, SharedRegistryObject, UnitsContainer
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
     __rmul__ = __mul__
 
-    # PlainUnit / PlainUnit -> PlainUnit
+    # PlainUnit / (PlainUnit | UnitsContainer) -> PlainUnit
     @overload
     def __truediv__(self, other: Self) -> Self: ...
     # PlainUnit / timedelta -> PlainQuantity[float]
@@ -194,6 +194,8 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     ) -> PlainQuantity[U]: ...
     def __truediv__(self, other):
         # First handle the case where `other` is a unit or quantity
+        if isinstance(other, UnitsContainer):
+            return self.__class__(self._units / other)
         if self._check(other):
             if isinstance(other, self.__class__):
                 return self.__class__(self._units / other._units)
@@ -202,21 +204,24 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
                 return qself / other
         return self._REGISTRY.Quantity(1, self._units) / other
 
-    # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
-    @overload
-    def __rtruediv__[M: Magnitude](self, other: M) -> PlainQuantity[M]: ...
     # UnitsContainer / PlainUnit -> PlainUnit
     @overload
     def __rtruediv__(self, other: UnitsContainer) -> Self: ...
+    # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
+    @overload
+    def __rtruediv__[M: Magnitude](self, other: M) -> PlainQuantity[M]: ...
     def __rtruediv__(self, other):
-        # As PlainUnit and Quantity both handle truediv with each other rtruediv can
-        # only be called for something different.
-        if isinstance(other, NUMERIC_TYPES):
-            return self._REGISTRY.Quantity(other, 1 / self._units)
-        elif isinstance(other, UnitsContainer):
+        # NOTE: As PlainUnit and Quantity both handle __truediv__ with each other,
+        #   __rtruediv__ can only be called for something different.
+        if isinstance(other, UnitsContainer):
             return self.__class__(other / self._units)
-
-        return NotImplemented
+        # other is meant to be a magnitude
+        try:
+            return self._REGISTRY.Quantity(other, 1 / self._units)
+        except PintTypeError:
+            raise
+        except TypeError:
+            return NotImplemented
 
     __div__ = __truediv__
     __rdiv__ = __rtruediv__
