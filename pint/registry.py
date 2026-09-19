@@ -444,7 +444,7 @@ class Unit(
 
         __rmul__ = __mul__
 
-        # Unit / Unit -> Unit
+        # Unit / (Unit or UnitsContainer) -> Unit
         @overload
         def __truediv__(self, other: Self) -> Self: ...
         # Unit / timedelta -> Quantity[float]
@@ -452,12 +452,12 @@ class Unit(
         def __truediv__(
             self, other: datetime.timedelta | np.timedelta64
         ) -> Quantity[float]: ...
-        # Unit / <ArrayLike> -> Quantity[<NumPy Array>]
+        # Unit / <ArrayLike> -> Quantity[<Array>]
         @overload
-        def __truediv__(
-            self, other: opt.numpy.AnyNumberArray
-        ) -> Quantity[opt.numpy.ArrayND[np.number]]: ...
-        # Unit / <Magnitude> or Quantity[<Magnitude>]
+        def __truediv__[T: np.number](
+            self, other: opt.numpy.AnyArray[T]
+        ) -> Quantity[opt.numpy.ArrayND[T]]: ...
+        # Unit / (<Magnitude> or Quantity[<Magnitude>])
         #   -> Quantity[type of 1 / <Magnitude>]
         @overload
         def __truediv__[U: Magnitude](
@@ -466,12 +466,22 @@ class Unit(
             | opt.CanRTruediv[Literal[1], U],
         ) -> Quantity[U]: ...
 
-        # <Magnitude> / Unit -> Quantity[<Magnitude>]
-        @overload
-        def __rtruediv__[M: Magnitude](self, other: M) -> Quantity[M]: ...
         # UnitsContainer / Unit -> Unit
         @overload
         def __rtruediv__(self, other: UnitsContainer) -> Self: ...
+        # timedelta / Unit -> Quantity[float]
+        @overload
+        def __rtruediv__(
+            self, other: datetime.timedelta | np.timedelta64
+        ) -> Quantity[float]: ...
+        # <Magnitude> / Unit -> Quantity[<Magnitude>]
+        @overload
+        def __rtruediv__[M: Magnitude](self, other: M) -> Quantity[M]: ...
+        # <ArrayLike> / Unit -> Quantity[<Array>]
+        @overload
+        def __rtruediv__[T: np.number](
+            self, other: opt.numpy.AnyArray[T]
+        ) -> Quantity[opt.numpy.ArrayND[T]]: ...
 
 
 class GenericUnitRegistry[QuantityT: _Quantity, UnitT: _Unit](

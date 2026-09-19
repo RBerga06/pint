@@ -175,7 +175,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
 
     __rmul__ = __mul__
 
-    # PlainUnit / (PlainUnit | UnitsContainer) -> PlainUnit
+    # PlainUnit / (PlainUnit or UnitsContainer) -> PlainUnit
     @overload
     def __truediv__(self, other: Self) -> Self: ...
     # PlainUnit / timedelta -> PlainQuantity[float]
@@ -188,7 +188,7 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     def __truediv__[T: np.number](
         self, other: opt.numpy.AnyArray[T]
     ) -> PlainQuantity[opt.numpy.ArrayND[T]]: ...
-    # PlainUnit / <Magnitude> or PlainQuantity[<Magnitude>]
+    # PlainUnit / (<Magnitude> or PlainQuantity[<Magnitude>])
     #   -> PlainQuantity[type of 1 / <Magnitude>]
     @overload
     def __truediv__[U: Magnitude](
