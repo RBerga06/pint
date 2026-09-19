@@ -26,7 +26,7 @@ try:
     type Scalar = _BuiltinScalar | np.number[Any]
     type Array = np.ndarray[Any, Any]
 except ModuleNotFoundError:
-    # NOTE: redefining type aliases is not supported and may lead to type checker misbehavior
+    # NOTE: redefining type aliases is not officially supported and may lead to type checker misbehavior
     assert not TYPE_CHECKING
     type Scalar = _BuiltinScalar
     type Array = Never

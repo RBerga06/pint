@@ -146,15 +146,17 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     def __mul__(
         self, other: datetime.timedelta | np.timedelta64
     ) -> PlainQuantity[float]: ...
+    # PlainUnit * <ArrayLike> -> PlainQuantity[<Array>]
+    @overload
+    def __mul__[T: np.number](
+        self, other: opt.numpy.AnyArray[T]
+    ) -> opt.numpy.ArrayND[T]: ...
     # PlainUnit * <Magnitude> -> PlainQuantity[<Magnitude>]
     @overload
     def __mul__[T: Magnitude](self, other: T) -> PlainQuantity[T]: ...
     # PlainUnit * <PlainQuantity> -> <PlainQuantity>
     @overload
     def __mul__[Q: PlainQuantity](self, other: Q) -> Q: ...
-    # PlainUnit * str -> PlainQuantity
-    @overload
-    def __mul__(self, other: str) -> PlainQuantity[Any]: ...
     def __mul__(self, other):
         if isinstance(other, UnitsContainer):
             return self.__class__(self._units * other)
@@ -181,11 +183,11 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     def __truediv__(
         self, other: datetime.timedelta | np.timedelta64
     ) -> PlainQuantity[float]: ...
-    # PlainUnit / <ArrayLike> -> PlainQuantity[<NumPy Array>]
+    # PlainUnit / <ArrayLike> -> PlainQuantity[<Array>]
     @overload
-    def __truediv__(
-        self, other: opt.numpy.AnyNumberArray
-    ) -> PlainQuantity[opt.numpy.ArrayND[np.number]]: ...
+    def __truediv__[T: np.number](
+        self, other: opt.numpy.AnyArray[T]
+    ) -> PlainQuantity[opt.numpy.ArrayND[T]]: ...
     # PlainUnit / <Magnitude> or PlainQuantity[<Magnitude>]
     #   -> PlainQuantity[type of 1 / <Magnitude>]
     @overload
@@ -215,6 +217,11 @@ class PlainUnit(PrettyIPython, SharedRegistryObject):
     # <Magnitude> / PlainUnit -> PlainQuantity[<Magnitude>]
     @overload
     def __rtruediv__[M: Magnitude](self, other: M) -> PlainQuantity[M]: ...
+    # <ArrayLike> / PlainUnit -> PlainQuantity[<Array>]
+    @overload
+    def __rtruediv__[T: np.number](
+        self, other: opt.numpy.AnyArray[T]
+    ) -> PlainQuantity[opt.numpy.ArrayND[T]]: ...
     def __rtruediv__(self: PlainUnit, other) -> PlainUnit | PlainQuantity:
         # NOTE: As PlainUnit and Quantity both handle __truediv__ with each other,
         #   __rtruediv__ can only be called for something different.
