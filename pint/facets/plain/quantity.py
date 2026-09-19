@@ -1021,7 +1021,13 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
     @check_implemented
     @ireduce_dimensions
-    def _imul_div(self, other, magnitude_op, units_op=None):
+    def _imul_div(
+        self: PlainQuantity,
+        other,
+        magnitude_op: Callable[[Magnitude, Magnitude], Magnitude],
+        units_op: Callable[[UnitsContainer, UnitsContainer], UnitsContainer]
+        | None = None,
+    ):
         """Perform multiplication or division operation in-place and return the
         result.
 
@@ -1041,7 +1047,9 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
 
         """
         if units_op is None:
-            units_op = magnitude_op
+            units_op = cast(
+                Callable[[UnitsContainer, UnitsContainer], UnitsContainer], magnitude_op
+            )
 
         if self._is_timedelta(other):
             other = self.__class__(other)
@@ -1061,19 +1069,23 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
                         self._units, getattr(other, "units", "")
                     )
             try:
-                other_magnitude = _to_magnitude(
-                    other, self.force_ndarray, self.force_ndarray_like
-                )
+                other_magnitude = self._REGISTRY._into_magnitude(other)
             except PintTypeError:
                 raise
             except TypeError:
                 return NotImplemented
-            self._magnitude = magnitude_op(self._magnitude, other_magnitude)
-            self._units = units_op(self._units, self.UnitsContainer())
+            # do the operations first and only change self later (when they've both succeeded)
+            magnitude = magnitude_op(self._magnitude, other_magnitude)
+            units = units_op(self._units, self.UnitsContainer())
+            self._magnitude = magnitude
+            self._units = units
             return self
 
         if isinstance(other, self._REGISTRY.Unit):
             other = 1 * other
+
+        # from now on, we know `other` is a `PlainQuantity`
+        other = cast(PlainQuantity, other)
 
         if not self._ok_for_muldiv(no_offset_units_self):
             raise OffsetUnitCalculusError(self._units, other._units)
@@ -1087,8 +1099,10 @@ class PlainQuantity(PrettyIPython, SharedRegistryObject, Generic[MagnitudeT_co])
         elif no_offset_units_other == len(other._units) == 1:
             other.ito_root_units()
 
-        self._magnitude = magnitude_op(self._magnitude, other._magnitude)
-        self._units = units_op(self._units, other._units)
+        magnitude = magnitude_op(self._magnitude, other._magnitude)
+        units = units_op(self._units, other._units)
+        self._magnitude = magnitude
+        self._units = units
 
         return self
 
