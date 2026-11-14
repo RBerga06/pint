@@ -204,7 +204,7 @@ def eq(lhs: Any, rhs: Any, /, check_all: bool) -> "bool | np.bool | Iterable[boo
         if has_array_api(out):
             return bool(array_api_namespace(out).all(out))
         elif is_duck_array(out):
-            return out.all().item()
+            return bool(out.all())
     return out
 
 
@@ -281,7 +281,7 @@ def zero_or_nan(obj: Any, /, check_all: bool) -> "bool | np.bool | Iterable[bool
         if has_array_api(out):
             return bool(array_api_namespace(out).all(out))
         elif is_duck_array(out):
-            return out.all().item()
+            return bool(out.all())
     return out
 
 
